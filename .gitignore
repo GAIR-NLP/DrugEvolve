@@ -1,0 +1,45 @@
+# --- OS / IDE ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml
+
+# --- Python build / cache ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+build/
+dist/
+*.egg-info/
+
+# --- Logs / run artifacts ---
+*.log
+*.tmp
+pipeline/logs/
+tasks/*/src/algorithm/*/
+
+# --- Virtualenvs / secrets ---
+.env*
+!.env.example
+env/
+venv/
+.venv/
+
+# --- HuggingFace caches (heavy binary downloads) ---
+hug/
+cache/
+.cache/
+
+# --- Trained model checkpoints ---
+checkpoint-*/
+**/checkpoint-*/
+
+# --- DrugEvolve run state ---
+.drugevolve/
+.pytest_cache/
+.ruff_cache/
+coverage.xml
+.coverage
+htmlcov/
