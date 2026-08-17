@@ -4,12 +4,6 @@
   <strong>An AI System for Autonomous Algorithm Evolution in Drug Development</strong>
 </p>
 
-<p align="center">
-  <img alt="Python 3.10+" src="https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white">
-  <img alt="Version 0.1.0" src="https://img.shields.io/badge/version-0.1.0-6C63FF">
-  <img alt="Status Alpha" src="https://img.shields.io/badge/status-alpha-F59E0B">
-  <img alt="License Apache 2.0" src="https://img.shields.io/badge/license-Apache--2.0-2EA44F">
-</p>
 
 <p align="center">
   <img src="docs/drugevolve.jpg" alt="DrugEvolve framework" width="95%">
