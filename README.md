@@ -4,6 +4,11 @@
   <strong>An AI System for Autonomous Algorithm Evolution in Drug Development</strong>
 </p>
 
+<div align="center">
+
+[![](https://img.shields.io/badge/paper-biorxiv-red?style=plastic&logo=GitBook)](https://www.biorxiv.org/content/10.64898/2026.08.16.745117v1)
+
+</div>
 
 <p align="center">
   <img src="docs/drugevolve.jpg" alt="DrugEvolve framework" width="95%">
@@ -606,3 +611,15 @@ Additional project documentation:
 ## License
 
 DrugEvolve is released under the [Apache License 2.0](LICENSE).
+
+## Citation
+
+```bibtex
+@article{Zhou2026.08.16.745117,
+  author = {Zhou, Zhimeng and Nan, Yang and Mou, Minjie and Qian, Yuntao and Liu, Yixiu and Zuo, Zhengyu and Yang, Hao and Xu, Weixian and Li, Bo and Jiang, Wanghao and Ren, Yanlin and Liao, Yang and Wang, Yimeng and Li, Yinghong and Yang, Qingxia and Xi, Zhiheng and Mi, Tiantian and Sun, Huaicheng and Liu, Pengfei and Zhu, Feng},
+  title = {An AI System for Autonomous Algorithm Evolution in Drug Development},
+  journal = {bioRxiv},
+  year = {2026},
+  doi = {10.64898/2026.08.16.745117},
+  url = {https://www.biorxiv.org/content/10.64898/2026.08.16.745117v1}
+}
