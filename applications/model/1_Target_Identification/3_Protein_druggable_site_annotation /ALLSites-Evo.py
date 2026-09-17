@@ -10,14 +10,15 @@ from typing import Tuple, Optional, List
 import sys
 from pathlib import Path
 
-# 永远定位到 src 目录
-SRC_ROOT = Path(__file__).resolve().parents[2]
+# Keep the task-local ``src`` package importable when this file is loaded from
+# the DrugEvolve candidate directory or run directly.
+SRC_ROOT = Path(__file__).resolve().parent
 if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
-from utils.helpers import todevice
-from models.lookahead import Lookahead
-from models.radam import RAdam
+from src.utils.helpers import todevice
+from src.models.lookahead import Lookahead
+from src.models.radam import RAdam
 
 
 class PositionalEncoding(nn.Module):
@@ -338,4 +339,3 @@ class Tester:
             torch.save(model.module.state_dict(), filename)
         else:
             torch.save(model.state_dict(), filename)
-

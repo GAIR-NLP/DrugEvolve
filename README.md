@@ -7,6 +7,7 @@
 <div align="center">
 
 [![](https://img.shields.io/badge/paper-biorxiv-red?style=plastic&logo=GitBook)](https://www.biorxiv.org/content/10.64898/2026.08.16.745117v1)
+[![](https://img.shields.io/badge/dataset-Hugging%20Face-yellow?style=plastic&logo=huggingface)](https://huggingface.co/datasets/Zhouzhimeng/DrugEvolve-datasets)
 
 </div>
 
@@ -44,10 +45,9 @@ resumable.
 - [Literature knowledge as cognition](#literature-knowledge-as-cognition)
 - [Outputs and run state](#outputs-and-run-state)
 - [Configuration reference](#configuration-reference)
-- [Troubleshooting](#troubleshooting)
 - [Security](#security)
-- [Development](#development)
 - [License](#license)
+- [Citation](#citation)
 
 ## What DrugEvolve does
 
@@ -66,7 +66,7 @@ For every evolution round, the framework:
 
 DrugEvolve keeps two kinds of memory separate:
 
-- **Evolutionary database:** candidate code, scores, failures, analyses,
+- **Evolutionary database:** candidate code, scores, analyses,
   parents, visit counts, and lineage.
 - **Cognition store:** external knowledge such as literature, scientific
   heuristics, and expert guidance.
@@ -81,7 +81,7 @@ are bounded by a configurable timeout.
   <img src="docs/drugevolve-applications.jpg" alt="DrugEvolve framework" width="95%">
 </p>
 
-The [`drugevolve-applications/`](drugevolve-applications/) directory contains the baseline and evolved implementations corresponding to the tasks evaluated in the DrugEvolve study. For each application, the directory provides the code before and after autonomous evolution, organized across four stages of drug development:
+The [`applications/model/`](applications/model/) directory contains the baseline and evolved implementations corresponding to the tasks evaluated in the DrugEvolve study. For each application, the directory provides the code before and after autonomous evolution, organized across four stages of drug development:
 
 <table>
   <thead>
@@ -124,6 +124,11 @@ task may use PyTorch, PyTorch Geometric, RDKit, Transformers, or another stack.
 
 ## Quick start
 
+Run the commands below from the repository root. The `my_task` workspace,
+training script, datasets, and YAML file are examples you must create and adapt;
+they are not bundled runnable tasks. The application model files do not provide
+a complete training environment.
+
 Running DrugEvolve requires four pieces:
 
 1. a task directory with a training launcher;
@@ -140,7 +145,18 @@ for each file are described in the next sections.
 python -m pip install -e '.[agents,dev]'
 ```
 
+If Conda is available, `pipeline/run.sh` activates `CONDA_ENV` (default:
+`drugevolve`). Set `CONDA_ENV` to your intended environment name and install the
+dependencies there before starting the pipeline. Without Conda, the launcher
+uses `python` from the current environment.
+
 ### 2. Create a task workspace
+
+```bash
+mkdir -p tasks/my_task/src/algorithm configs
+```
+
+Create your task files with this layout:
 
 ```text
 tasks/my_task/src/
@@ -180,14 +196,16 @@ drugevolve init \
 drugevolve preflight \
   --run-dir "$RUN_DIR" \
   --workspace-root .
+```
 
+Inspect `"$RUN_DIR/preflight.md"`, then confirm:
+
+```bash
 drugevolve preflight \
   --run-dir "$RUN_DIR" \
   --workspace-root . \
   --confirm
 ```
-
-Always inspect `"$RUN_DIR/preflight.md"` before confirmation.
 
 ### 4. Configure the runtime
 
@@ -210,14 +228,26 @@ export DRUGEVOLVE_BASELINE_CONTENT="Describe the baseline and its reference metr
 export CUDA_DEVICE=0
 ```
 
-### 5. Start the evolution pipeline
+### 5. Configure task prompts
+
+Before starting, write task-specific prompts following
+[Customize the agent prompts](#customize-the-agent-prompts). In particular,
+provide `generator.txt` with your task objective and constraints, and
+`implementer.txt` with the model interface expected by your training script and the required outputs. 
+
+Point the pipeline to the directory containing your prompt files:
+
+```bash
+export DRUGEVOLVE_PROMPT_DIR="$PWD/prompts/my_task"
+```
+
+### 6. Start the evolution pipeline
 
 ```bash
 bash pipeline/run.sh
 ```
 
-The number of rounds, patience, sampler, and failure limit are loaded from the
-confirmed run specification.
+The number of rounds, patience, sampler, and failure limit are loaded from the confirmed run specification.
 
 ## Connect your task
 
@@ -258,8 +288,8 @@ For each candidate, DrugEvolve:
 4. rewrites the quoted `MODEL_PATH` assignment to the candidate `model.py`;
 5. executes `launch_bash.sh` from inside the candidate directory.
 
-Your `run.sh` should therefore contain a quoted `MODEL_PATH` assignment that
-ends in `model.py`:
+Your `run.sh` must use an `export MODEL_PATH="...model.py"` assignment
+with double quotes so the current launcher can rewrite it:
 
 ```bash
 #!/usr/bin/env bash
@@ -352,7 +382,8 @@ export DRUGEVOLVE_PROMPT_DIR="$PWD/prompts/my_task"
 ```
 
 Each file is a UTF-8 `string.Template` document and therefore uses
-`$variable` placeholders. Missing profile files fall back to built-in prompts.
+`$variable` placeholders. Missing profile files fall back to built-in prompts. Use `$$` for a literal
+dollar sign, including shell variables or mathematical notation in a profile.
 
 | Profile | What to describe | Available variables |
 | --- | --- | --- |
@@ -548,8 +579,33 @@ drugevolve cognition-search \
 
 During evolution, the pipeline searches cognition using the sampled parent's
 motivation, explanation, and mathematical description. Up to three matching
-items are injected into the Generator context and later made available to the
-Analyst summarizer.
+items are injected into the Generator context when a parent exists. On the
+first round, an empty database produces only initialization context. The
+Analyst performs a separate search using the new candidate for its summarizer.
+
+## Outputs and run state
+
+By default, run metadata is stored under `.drugevolve/runs/<run_name>/`:
+
+| Path | Contents |
+| --- | --- |
+| `run_spec.yaml`, `preflight.md` | Saved specification and preflight summary |
+| `database/` | Recorded candidates, lineage, and sampler state |
+| `cognition/` | External knowledge added through the CLI |
+| `steps/step_<id>/` | Recorded candidate's `node.json`, `results.json`, `program.json`, and `analysis.md` |
+| `best/` | Best recorded candidate metadata and step snapshot |
+| `state.json`, `events.jsonl` | Run counters and event records, including failed attempts |
+
+Candidate source files, model outputs, and `training.stdout.log` /
+`training.stderr.log` remain in `CODE_DIR/algorithm/<candidate_name>/`.
+Agent logs default to `pipeline/logs/<task_name>_cuda<device>/`.
+Failed attempts are counted and logged, but the compatibility pipeline does not
+store every failed candidate as a database node.
+
+Reuse the same run directory to continue from its persisted history. A restart
+begins a fresh `max_rounds` loop and resets the in-process consecutive-failure
+counter; it does not resume an interrupted training subprocess. Persisted
+patience state is retained.
 
 ## Configuration reference
 
@@ -594,20 +650,6 @@ All defaults and sanity checks are defined in `pipeline/env.sh`.
 
 See [SECURITY.md](SECURITY.md) for the full security model.
 
-## Development
-
-```bash
-python -m pytest
-ruff check drugevolve tests
-python -m build
-```
-
-Additional project documentation:
-
-- [Contributing](CONTRIBUTING.md)
-- [Security policy](SECURITY.md)
-- [Changelog](CHANGELOG.md)
-
 ## License
 
 DrugEvolve is released under the [Apache License 2.0](LICENSE).
@@ -623,3 +665,4 @@ DrugEvolve is released under the [Apache License 2.0](LICENSE).
   doi = {10.64898/2026.08.16.745117},
   url = {https://www.biorxiv.org/content/10.64898/2026.08.16.745117v1}
 }
+```
