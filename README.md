@@ -8,6 +8,7 @@
 
 [![](https://img.shields.io/badge/paper-biorxiv-red?style=plastic&logo=GitBook)](https://www.biorxiv.org/content/10.64898/2026.08.16.745117v1)
 [![](https://img.shields.io/badge/dataset-Hugging%20Face-yellow?style=plastic&logo=huggingface)](https://huggingface.co/datasets/Zhouzhimeng/DrugEvolve-datasets)
+[![](https://img.shields.io/badge/Evolution-Trace-black?style=plastic&logo=github)](https://github.com/zhimeng-zhou/DrugEvolve-Evolution-Trace)
 
 </div>
 
@@ -109,6 +110,15 @@ The [`applications/model/`](applications/model/) directory contains the baseline
     </tr>
   </tbody>
 </table>
+
+> [!NOTE]
+> The [`applications/model/`](applications/model/) directory stores the core
+> `model.py` implementations before and after autonomous optimization. A complete
+> DrugEvolve evolution trace is provided using the protein druggable site annotation
+> task as an example, including its training pipeline, configuration, data, and full
+> candidate-model history:
+>
+> [A Complete Example of the DrugEvolve Evolution Trace](https://github.com/zhimeng-zhou/DrugEvolve-Evolution-Trace)
 
 
 
@@ -233,7 +243,7 @@ export CUDA_DEVICE=0
 Before starting, write task-specific prompts following
 [Customize the agent prompts](#customize-the-agent-prompts). In particular,
 provide `generator.txt` with your task objective and constraints, and
-`implementer.txt` with the model interface expected by your training script and the required outputs. 
+`implementer.txt` with the model interface expected by your training script and the required outputs.
 
 Point the pipeline to the directory containing your prompt files:
 
